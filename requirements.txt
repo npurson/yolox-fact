@@ -10,7 +10,10 @@ Pillow
 thop
 ninja
 tabulate
-tensorboard
+tensorboard>=1.15
+
+einops
+timm
 
 # verified versions
 # pycocotools corresponds to https://github.com/ppwwyyxx/cocoapi

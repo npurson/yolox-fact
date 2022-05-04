@@ -104,10 +104,21 @@ class Trainer:
         with torch.cuda.amp.autocast(enabled=self.amp_training):
             outputs = self.model(inps, targets)
 
+        if getattr(self, "find_unused_params", False):
+            outputs['total_loss'].backward()
+            for name, param in self.model.named_parameters():
+                if param.grad is None:
+                    print(name)
+            os._exit()
+
         loss = outputs["total_loss"]
 
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
+        if getattr(self, "grad_clip", None) is not None:
+            self.scaler.unscale_(self.optimizer)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(),
+                                           max_norm=self.exp.grad_clip)
         self.scaler.step(self.optimizer)
         self.scaler.update()
 
